@@ -16,33 +16,7 @@
 
 package logback4s
 
-import java.net.{ InetSocketAddress, Socket }
-import javax.net.SocketFactory
-
 /**
  * @author siuming
  */
-class TcpDestination(
-  host: String,
-  port: Int,
-  soTimeout: Int,
-  connectTimeout: Int) extends Destination {
-
-  @volatile var socket: Socket = _
-
-  override def send(bytes: Array[Byte]) = {
-    if (!socket.isClosed) {
-      socket = SocketFactory.getDefault.createSocket()
-      socket.setSoTimeout(soTimeout)
-      socket.connect(new InetSocketAddress(host, port), connectTimeout)
-    }
-    socket.getOutputStream.write(bytes)
-    socket.getOutputStream.flush()
-  }
-
-  protected def preSend(socket: Socket, bytes: Array[Byte]): Unit = {
-  }
-
-  protected def postSend(socket: Socket, bytes: Array[Byte]): Unit = {
-  }
-}
+private[logback4s] case class Backup(destination: Destination, until: Long)

@@ -16,12 +16,18 @@
 
 package logback4s
 
+import java.util.concurrent.atomic.AtomicLong
+
 /**
  * @author siuming
  */
 object RoundRobinStrategy extends RoundRobinStrategy {
-  val Type = "roundrobin"
+  val Name = "roundrobin"
 }
 trait RoundRobinStrategy extends DestinationStrategy {
-  override def select(destinations: Seq[Destination]) = ???
+  val counter = new AtomicLong()
+
+  override def select(destinations: Seq[Destination]) = {
+    destinations((counter.getAndIncrement() % destinations.size).toInt)
+  }
 }

@@ -16,12 +16,16 @@
 
 package logback4s
 
+import scala.util.Random
+
 /**
  * @author siuming
  */
 object RandomStrategy extends RandomStrategy {
-  val Type = "random"
+  val Name = "random"
 }
 trait RandomStrategy extends DestinationStrategy {
-  override def select(destinations: Seq[Destination]) = ???
+  override def select(destinations: Seq[Destination]) = {
+    destinations(new Random().nextInt(destinations.size))
+  }
 }

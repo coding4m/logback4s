@@ -23,10 +23,11 @@ import java.net.{ DatagramPacket, DatagramSocket, InetSocketAddress }
  */
 class UdpDestination(host: String, port: Int) extends Destination {
 
-  @volatile var socket = new DatagramSocket(new InetSocketAddress(host, port))
+  val remote = new InetSocketAddress(host, port)
+  val socket = new DatagramSocket()
 
   override def send(bytes: Array[Byte]) = {
-    val packet = new DatagramPacket(bytes, 0, bytes.length)
+    val packet = new DatagramPacket(bytes, 0, bytes.length, remote)
     socket.send(packet)
   }
 }

@@ -16,9 +16,13 @@
 
 package logback4s.logstash
 
+import ch.qos.logback.classic.spi.ILoggingEvent
+import logback4s.TcpAppenderBase
+
 /**
  * @author siuming
  */
-class LogstashTcpAppender {
-
+class LogstashTcpAppender extends TcpAppenderBase[ILoggingEvent] {
+  override val defaultHost = "127.0.0.1"
+  override val defaultPort = 4439
 }

@@ -19,10 +19,7 @@ package logback4s
 /**
  * @author siuming
  */
-abstract class TcpAppenderBase[E] extends DestinationAppender[E] {
-
-  private var soTimeout: Int = _
-  private var connectTimeout: Int = _
+abstract class UdpAppenderBase[E] extends DestinationAppender[E] {
 
   override protected def newRouter(
     destinations: String,
@@ -32,8 +29,8 @@ abstract class TcpAppenderBase[E] extends DestinationAppender[E] {
     failTimeout: Long) = {
     import Destination._
     val connections = destinations.split(",|;").collect {
-      case HostAndPort(host, port) => new TcpDestination(host, port.toInt, soTimeout, connectTimeout)
-      case Host(host)              => new TcpDestination(host, defaultPort, soTimeout, connectTimeout)
+      case HostAndPort(host, port) => new UdpDestination(host, port.toInt)
+      case Host(host)              => new UdpDestination(host, defaultPort)
     }
 
     val strategy = destinationStrategy.toLowerCase match {
@@ -42,13 +39,5 @@ abstract class TcpAppenderBase[E] extends DestinationAppender[E] {
     }
 
     new DestinationRouter(connections, strategy, maxRetries, maxFails, failTimeout)
-  }
-
-  def setSoTimeout(soTimeout: Int): Unit = {
-    this.soTimeout = soTimeout
-  }
-
-  def setConnectTimeout(connectTimeout: Int): Unit = {
-    this.connectTimeout = connectTimeout
   }
 }

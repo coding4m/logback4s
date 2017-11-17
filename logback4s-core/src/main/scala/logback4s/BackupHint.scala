@@ -19,4 +19,4 @@ package logback4s
 /**
  * @author siuming
  */
-case class DestinationHint(id: String, fails: Int)
+private[logback4s] case class BackupHint(id: String, fails: Int)
