@@ -16,18 +16,7 @@
 
 package logback4s
 
-import java.util.UUID
-
-import scala.util.matching.Regex
-
 /**
  * @author siuming
  */
-object Destination {
-  val Host: Regex = "([^:]+)".r
-  val HostAndPort: Regex = "([^:]+):([0-9]+)".r
-}
-trait Destination {
-  val id: String = UUID.randomUUID().toString
-  def send(bytes: Array[Byte]): Unit
-}
+case class DestinationHint(id: String, fails: Int)

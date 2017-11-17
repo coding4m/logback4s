@@ -16,24 +16,79 @@
 
 package logback4s
 
+import java.util.concurrent.locks.ReentrantReadWriteLock
+
 /**
  * @author siuming
  */
-class DestinationRouter(destinations: Seq[Destination], strategy: DestinationStrategy) {
+class DestinationRouter(
+  destinations: Seq[Destination],
+  strategy: DestinationStrategy,
+  maxFails: Int = 1,
+  failTimeout: Long = 10000) {
 
+  private val lock = new ReentrantReadWriteLock()
+  private var hints = Seq.empty[DestinationHint]
   private var actives = Seq(destinations: _*)
-  private var backups = Seq.empty[Destination]
+  private var backups = Seq.empty[(Destination, Long)]
 
   def send(bytes: Array[Byte]): Unit = {
-    if (actives.isEmpty) {
-      throw new NotAvailableDestinationException
-    }
+    readLock {
+      if (actives.isEmpty) {
+        upgradeDestination()
+      }
+      if (actives.isEmpty) {
+        throw new NotAvailableDestinationException
+      }
 
-    try {
       val destination = strategy.select(actives)
-      destination.send(bytes)
-    } catch {
-      case e: Throwable =>
+      try {
+        destination.send(bytes)
+      } catch {
+        case e: Throwable =>
+          downgradeDestination(destination)
+          throw e
+      }
+    }
+  }
+
+  private def upgradeDestination(): Unit = {
+    writeLock {
+      backups.filter(_._2 <= System.currentTimeMillis()).foreach { it =>
+        backups = backups.filterNot(_._1.id != it._1.id)
+        actives = actives.filterNot(_.id != it._1.id) :+ it._1
+      }
+    }
+  }
+
+  private def downgradeDestination(destination: Destination): Unit = {
+    writeLock {
+      val hint = hints.find(_.id == destination.id).getOrElse(DestinationHint(destination.id, 0))
+      if (hint.fails >= maxFails - 1) {
+        backups = backups.filterNot(_._1.id != hint.id) :+ (destination, System.currentTimeMillis() + failTimeout)
+        actives = actives.filterNot(_.id != hint.id)
+        hints = hints.filterNot(_.id != hint.id)
+      } else {
+        hints = hints.filterNot(_.id != hint.id) :+ hint.copy(fails = hint.fails + 1)
+      }
+    }
+  }
+
+  private def readLock[T](body: => T): T = {
+    try {
+      lock.readLock().lock()
+      body
+    } finally {
+      lock.readLock().unlock()
+    }
+  }
+
+  private def writeLock[T](body: => T): T = {
+    try {
+      lock.writeLock().lock()
+      body
+    } finally {
+      lock.writeLock().lock()
     }
   }
 }
