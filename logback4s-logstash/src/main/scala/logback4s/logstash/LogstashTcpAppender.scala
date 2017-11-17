@@ -19,6 +19,6 @@ package logback4s.logstash
 /**
  * @author siuming
  */
-class UdpAppender {
+class LogstashTcpAppender {
 
 }
