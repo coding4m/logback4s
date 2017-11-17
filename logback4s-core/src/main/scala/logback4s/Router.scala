@@ -19,6 +19,21 @@ package logback4s
 /**
  * @author siuming
  */
-trait Destination {
-  def send(bytes: Array[Byte]): Unit
+class Router(destinations: Seq[Destination], strategy: DestinationStrategy) {
+
+  private var actives = Seq(destinations: _*)
+  private var backups = Seq.empty[Destination]
+
+  def send(bytes: Array[Byte]): Unit = {
+    if (actives.isEmpty) {
+
+    }
+
+    try {
+      val destination = strategy.select(actives)
+      destination.send(bytes)
+    } catch {
+      case e: Throwable =>
+    }
+  }
 }

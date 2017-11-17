@@ -16,9 +16,28 @@
 
 package logback4s
 
+import java.net.{ InetSocketAddress, Socket }
+import javax.net.SocketFactory
+
 /**
  * @author siuming
  */
-trait Destination {
-  def send(bytes: Array[Byte]): Unit
+class TcpDestination(host: String, port: Int, val settings: TcpSettings) extends Destination {
+
+  @volatile var socket: Socket = _
+
+  override def send(bytes: Array[Byte]) = {
+    if (!socket.isClosed) {
+      socket = SocketFactory.getDefault.createSocket()
+      socket.connect(new InetSocketAddress(host, port))
+    }
+    socket.getOutputStream.write(bytes)
+    socket.getOutputStream.flush()
+  }
+
+  protected def preSend(socket: Socket, bytes: Array[Byte]): Unit = {
+  }
+
+  protected def postSend(socket: Socket, bytes: Array[Byte]): Unit = {
+  }
 }

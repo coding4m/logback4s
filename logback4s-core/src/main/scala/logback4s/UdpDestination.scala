@@ -16,9 +16,17 @@
 
 package logback4s
 
+import java.net.{ DatagramPacket, DatagramSocket, InetSocketAddress }
+
 /**
  * @author siuming
  */
-trait Destination {
-  def send(bytes: Array[Byte]): Unit
+class UdpDestination(host: String, port: Int, val settings: UdpSettings) extends Destination {
+
+  @volatile var socket = new DatagramSocket(new InetSocketAddress(host, port))
+
+  override def send(bytes: Array[Byte]) = {
+    val packet = new DatagramPacket(bytes, 0, bytes.length)
+    socket.send(packet)
+  }
 }

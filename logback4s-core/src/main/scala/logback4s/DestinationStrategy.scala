@@ -19,6 +19,6 @@ package logback4s
 /**
  * @author siuming
  */
-trait Destination {
-  def send(bytes: Array[Byte]): Unit
+trait DestinationStrategy {
+  def select(destinations: Seq[Destination]): Destination
 }
