@@ -22,7 +22,7 @@ import javax.net.SocketFactory
 /**
  * @author siuming
  */
-class TcpDestination(host: String, port: Int, val settings: TcpSettings) extends Destination {
+class TcpDestination(host: String, port: Int) extends Destination {
 
   @volatile var socket: Socket = _
 

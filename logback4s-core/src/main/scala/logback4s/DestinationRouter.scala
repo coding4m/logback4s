@@ -19,6 +19,21 @@ package logback4s
 /**
  * @author siuming
  */
-class TcpSettings extends DestinationSettings {
+class DestinationRouter(destinations: Seq[Destination], strategy: DestinationStrategy) {
 
+  private var actives = Seq(destinations: _*)
+  private var backups = Seq.empty[Destination]
+
+  def send(bytes: Array[Byte]): Unit = {
+    if (actives.isEmpty) {
+      throw new NotAvailableDestinationException
+    }
+
+    try {
+      val destination = strategy.select(actives)
+      destination.send(bytes)
+    } catch {
+      case e: Throwable =>
+    }
+  }
 }

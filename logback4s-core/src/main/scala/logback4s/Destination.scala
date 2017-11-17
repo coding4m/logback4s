@@ -16,9 +16,15 @@
 
 package logback4s
 
+import scala.util.matching.Regex
+
 /**
  * @author siuming
  */
+object Destination {
+  val Host: Regex = "([^:]+)".r
+  val HostAndPort: Regex = "([^:]+):([0-9]+)".r
+}
 trait Destination {
   def send(bytes: Array[Byte]): Unit
 }

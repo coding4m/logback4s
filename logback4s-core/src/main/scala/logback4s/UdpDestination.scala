@@ -21,7 +21,7 @@ import java.net.{ DatagramPacket, DatagramSocket, InetSocketAddress }
 /**
  * @author siuming
  */
-class UdpDestination(host: String, port: Int, val settings: UdpSettings) extends Destination {
+class UdpDestination(host: String, port: Int) extends Destination {
 
   @volatile var socket = new DatagramSocket(new InetSocketAddress(host, port))
 

@@ -19,6 +19,9 @@ package logback4s
 /**
  * @author siuming
  */
-class UdpSettings extends DestinationSettings {
-
+object RoundRobinStrategy extends RoundRobinStrategy {
+  val Type = "roundrobin"
+}
+trait RoundRobinStrategy extends DestinationStrategy {
+  override def select(destinations: Seq[Destination]) = ???
 }
