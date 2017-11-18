@@ -30,4 +30,14 @@ class UdpDestination(host: String, port: Int) extends Destination {
     val packet = new DatagramPacket(bytes, 0, bytes.length, remote)
     socket.send(packet)
   }
+
+  override def close() = {
+    if (null != socket) {
+      try {
+        socket.close()
+      } catch {
+        case _: Throwable => //
+      }
+    }
+  }
 }

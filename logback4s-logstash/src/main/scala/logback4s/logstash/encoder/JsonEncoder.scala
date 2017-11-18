@@ -14,31 +14,18 @@
  * limitations under the License.
  */
 
-package logback4s.logstash
+package logback4s.logstash.encoder
 
 import ch.qos.logback.classic.spi.ILoggingEvent
-import logback4s.TcpAppenderBase
-import logback4s.logstash.encoder.JsonEncoder
+import ch.qos.logback.core.encoder.{ Encoder, EncoderBase }
 
 /**
  * @author siuming
  */
-class LogstashTcpAppender extends TcpAppenderBase[ILoggingEvent] {
-  override val defaultHost = "127.0.0.1"
-  override val defaultPort = 4439
+class JsonEncoder extends EncoderBase[ILoggingEvent] {
+  override def headerBytes() = ???
 
-  override protected def preStart() = {
-    if (null == getEncoder()) {
-      setEncoder(new JsonEncoder)
-      addWarn("encoder not set, use json encoder as default.")
-    }
-    if (null == getDestinations()) {
-      setDestinations(s"$defaultHost:$defaultPort")
-      addWarn(s"destinations not set, use $defaultHost:$defaultPort as default.")
-    }
-  }
+  override def encode(event: ILoggingEvent) = ???
 
-  override protected def processEvent(eventObject: ILoggingEvent) = {
-    ???
-  }
+  override def footerBytes() = ???
 }

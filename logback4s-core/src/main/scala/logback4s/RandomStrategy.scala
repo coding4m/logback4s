@@ -25,7 +25,8 @@ object RandomStrategy extends RandomStrategy {
   val Name = "random"
 }
 trait RandomStrategy extends DestinationStrategy {
+  private val random = new Random()
   override def select(destinations: Seq[Destination]) = {
-    destinations(new Random().nextInt(destinations.size))
+    destinations(random.nextInt(destinations.size))
   }
 }

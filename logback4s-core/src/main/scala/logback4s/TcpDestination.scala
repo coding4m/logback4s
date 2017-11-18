@@ -22,11 +22,7 @@ import javax.net.SocketFactory
 /**
  * @author siuming
  */
-class TcpDestination(
-  host: String,
-  port: Int,
-  soTimeout: Int,
-  connectTimeout: Int) extends Destination {
+class TcpDestination(host: String, port: Int, soTimeout: Int, connectTimeout: Int) extends Destination {
 
   @volatile var socket: Socket = _
 
@@ -44,5 +40,15 @@ class TcpDestination(
   }
 
   protected def postSend(socket: Socket, bytes: Array[Byte]): Unit = {
+  }
+
+  override def close() = {
+    if (null != socket) {
+      try {
+        socket.close()
+      } catch {
+        case _: Throwable => //ignore it, not the end of the world.
+      }
+    }
   }
 }

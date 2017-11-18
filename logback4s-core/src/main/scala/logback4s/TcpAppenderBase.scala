@@ -44,11 +44,19 @@ abstract class TcpAppenderBase[E] extends DestinationAppender[E] {
     new DestinationRouter(connections, strategy, maxRetries, maxFails, failTimeout)
   }
 
-  def setSoTimeout(soTimeout: Int): Unit = {
+  final def getSoTimeout(): Int = {
+    this.soTimeout
+  }
+
+  final def setSoTimeout(soTimeout: Int): Unit = {
     this.soTimeout = soTimeout
   }
 
-  def setConnectTimeout(connectTimeout: Int): Unit = {
+  final def getConnectTimeout(): Int = {
+    this.connectTimeout
+  }
+
+  final def setConnectTimeout(connectTimeout: Int): Unit = {
     this.connectTimeout = connectTimeout
   }
 }

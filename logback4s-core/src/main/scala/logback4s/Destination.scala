@@ -16,6 +16,7 @@
 
 package logback4s
 
+import java.io.Closeable
 import java.util.UUID
 
 import scala.util.matching.Regex
@@ -27,7 +28,7 @@ object Destination {
   val Host: Regex = "([^:]+)".r
   val HostAndPort: Regex = "([^:]+):([0-9]+)".r
 }
-trait Destination {
+trait Destination extends Closeable {
   val id: String = UUID.randomUUID().toString
   def send(bytes: Array[Byte]): Unit
 }

@@ -16,6 +16,7 @@
 
 package logback4s
 
+import java.io.Closeable
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
 /**
@@ -26,7 +27,7 @@ final class DestinationRouter(
   strategy: DestinationStrategy,
   maxRetries: Int,
   maxFails: Int,
-  failTimeout: Long) {
+  failTimeout: Long) extends Closeable {
 
   private val lock = new ReentrantReadWriteLock()
   private var hints = Seq.empty[BackupHint]
@@ -102,5 +103,9 @@ final class DestinationRouter(
     } finally {
       lock.writeLock().unlock()
     }
+  }
+
+  override def close() = {
+    destinations.foreach(_.close())
   }
 }

@@ -43,7 +43,7 @@ abstract class DestinationAppender[E] extends AppenderBase[E] {
   private var destinations: String = _
   private var destinationStrategy: String = RandomStrategy.Name
 
-  override def append(eventObject: E) = {
+  final override def append(eventObject: E) = {
     val event = processEvent(eventObject)
     router.send(encoder.headerBytes() ++ encoder.encode(event) ++ encoder.footerBytes())
     postProcessEvent(eventObject)
@@ -55,9 +55,17 @@ abstract class DestinationAppender[E] extends AppenderBase[E] {
   protected def postProcessEvent(eventObject: E): Unit = {
   }
 
-  override def start() = {
-    router = newRouter(destinations, destinationStrategy, maxRetries, maxFails, failTimeout)
+  final override def start() = {
     super.start()
+    preStart()
+    router = newRouter(destinations, destinationStrategy, maxRetries, maxFails, failTimeout)
+    postStart()
+  }
+
+  protected def preStart(): Unit = {
+  }
+
+  protected def postStart(): Unit = {
   }
 
   protected def newRouter(
@@ -67,27 +75,68 @@ abstract class DestinationAppender[E] extends AppenderBase[E] {
     maxFails: Int,
     failTimeout: Long): DestinationRouter
 
-  def setEncoder(encoder: Encoder[E]): Unit = {
+  final override def stop() = {
+    super.stop()
+    preStop()
+    try {
+      router.close()
+    } catch {
+      case _: Throwable =>
+    }
+    postStop()
+  }
+
+  protected def preStop(): Unit = {
+  }
+
+  protected def postStop(): Unit = {
+  }
+
+  final def getEncoder(): Encoder[E] = {
+    this.encoder
+  }
+
+  final def setEncoder(encoder: Encoder[E]): Unit = {
     this.encoder = encoder
   }
 
-  def setMaxRetries(maxRetries: Int): Unit = {
+  final def getMaxRetries(): Int = {
+    this.maxRetries
+  }
+
+  final def setMaxRetries(maxRetries: Int): Unit = {
     this.maxRetries = maxRetries
   }
 
-  def setMaxFails(maxFails: Int): Unit = {
+  final def getMaxFails(): Int = {
+    this.maxFails
+  }
+
+  final def setMaxFails(maxFails: Int): Unit = {
     this.maxFails = maxFails
   }
 
-  def setFailTimeout(failTimeout: Long): Unit = {
+  final def getFailTimeout(): Long = {
+    this.failTimeout
+  }
+
+  final def setFailTimeout(failTimeout: Long): Unit = {
     this.failTimeout = failTimeout
   }
 
-  def setDestinations(destinations: String): Unit = {
+  final def getDestinations(): String = {
+    this.destinations
+  }
+
+  final def setDestinations(destinations: String): Unit = {
     this.destinations = destinations
   }
 
-  def setDestinationStrategy(strategy: String): Unit = {
+  final def getDestinationStrategy(): String = {
+    this.destinationStrategy
+  }
+
+  final def setDestinationStrategy(strategy: String): Unit = {
     this.destinationStrategy = strategy
   }
 }
