@@ -19,7 +19,7 @@ package logback4s
 /**
  * @author siuming
  */
-abstract class UdpAppenderBase[E] extends PipelineAppender[E] {
+abstract class UdpAppenderBase[E] extends PipeAppender[E] {
 
   override protected def newRouter(
     destinations: String,

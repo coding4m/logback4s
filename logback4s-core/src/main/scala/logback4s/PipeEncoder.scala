@@ -21,7 +21,7 @@ import ch.qos.logback.core.encoder.EncoderBase
 /**
  * @author siuming
  */
-trait PipelineEncoder[E] extends EncoderBase[E] {
+trait PipeEncoder[E] extends EncoderBase[E] {
   override def headerBytes() =
     Array.emptyByteArray
 

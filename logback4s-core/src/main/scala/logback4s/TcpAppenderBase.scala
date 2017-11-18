@@ -23,7 +23,7 @@ object TcpAppenderBase {
   val DefaultSoTimeout = 1000
   val DefaultConnectTomeout = 3000
 }
-abstract class TcpAppenderBase[E] extends PipelineAppender[E] {
+abstract class TcpAppenderBase[E] extends PipeAppender[E] {
   import TcpAppenderBase._
 
   private var soTimeout: Int = DefaultSoTimeout
