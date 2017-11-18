@@ -19,10 +19,15 @@ package logback4s
 /**
  * @author siuming
  */
+object TcpAppenderBase {
+  val DefaultSoTimeout = 1000
+  val DefaultConnectTomeout = 3000
+}
 abstract class TcpAppenderBase[E] extends PipelineAppender[E] {
+  import TcpAppenderBase._
 
-  private var soTimeout: Int = _
-  private var connectTimeout: Int = _
+  private var soTimeout: Int = DefaultSoTimeout
+  private var connectTimeout: Int = DefaultConnectTomeout
 
   override protected def newRouter(
     destinations: String,

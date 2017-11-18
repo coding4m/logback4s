@@ -19,6 +19,4 @@ package logback4s
 /**
  * @author siuming
  */
-class NotAvailableDestinationException extends RuntimeException {
-
-}
+class NotAvailableDestinationException extends RuntimeException
