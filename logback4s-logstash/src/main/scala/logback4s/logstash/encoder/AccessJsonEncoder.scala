@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-package logback4s
+package logback4s.logstash.encoder
 
-import scala.util.Random
+import ch.qos.logback.access.spi.AccessEvent
+import logback4s.PipelineEncoder
 
 /**
  * @author siuming
  */
-object RandomStrategy extends RandomStrategy {
-  val Name = "random"
-}
-trait RandomStrategy extends DestinationStrategy {
-  private val random = new Random()
-  override def select(destinations: Seq[Destination]) = {
-    destinations(random.nextInt(destinations.size))
-  }
+class AccessJsonEncoder extends PipelineEncoder[AccessEvent] {
+  override def encode(event: AccessEvent) = ???
 }

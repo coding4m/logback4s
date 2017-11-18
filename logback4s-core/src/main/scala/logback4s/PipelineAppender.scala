@@ -18,17 +18,18 @@ package logback4s
 
 import ch.qos.logback.core.AppenderBase
 import ch.qos.logback.core.encoder.Encoder
+import ch.qos.logback.core.spi.DeferredProcessingAware
 
 /**
  * @author siuming
  */
-object DestinationAppender {
+object PipelineAppender {
   val DefaultMaxRetries = 1
   val DefaultMaxFails = 1
   val DefaultFailTimeout = 10000
 }
-abstract class DestinationAppender[E] extends AppenderBase[E] {
-  import DestinationAppender._
+abstract class PipelineAppender[E] extends AppenderBase[E] {
+  import PipelineAppender._
 
   val defaultHost: String
   val defaultPort: Int
@@ -49,8 +50,13 @@ abstract class DestinationAppender[E] extends AppenderBase[E] {
     postProcessEvent(eventObject)
   }
 
-  protected def processEvent(eventObject: E): E =
-    eventObject
+  protected def processEvent(eventObject: E): E = eventObject match {
+    case deferred: DeferredProcessingAware =>
+      deferred.prepareForDeferredProcessing()
+      eventObject
+    case _ =>
+      eventObject
+  }
 
   protected def postProcessEvent(eventObject: E): Unit = {
   }

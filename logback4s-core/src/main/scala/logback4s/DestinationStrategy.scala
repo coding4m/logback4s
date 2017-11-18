@@ -16,9 +16,32 @@
 
 package logback4s
 
+import java.util.concurrent.atomic.AtomicLong
+
+import scala.util.Random
+
 /**
  * @author siuming
  */
 trait DestinationStrategy {
   def select(destinations: Seq[Destination]): Destination
+}
+object RandomStrategy extends RandomStrategy {
+  val Name = "random"
+}
+trait RandomStrategy extends DestinationStrategy {
+  private val random = new Random()
+  override def select(destinations: Seq[Destination]) = {
+    destinations(random.nextInt(destinations.size))
+  }
+}
+object RoundRobinStrategy extends RoundRobinStrategy {
+  val Name = "roundrobin"
+}
+trait RoundRobinStrategy extends DestinationStrategy {
+  val counter = new AtomicLong()
+
+  override def select(destinations: Seq[Destination]) = {
+    destinations((counter.getAndIncrement() % destinations.size).toInt)
+  }
 }

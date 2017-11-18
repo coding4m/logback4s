@@ -16,18 +16,15 @@
 
 package logback4s
 
-import java.util.concurrent.atomic.AtomicLong
+import ch.qos.logback.core.encoder.EncoderBase
 
 /**
  * @author siuming
  */
-object RoundRobinStrategy extends RoundRobinStrategy {
-  val Name = "roundrobin"
-}
-trait RoundRobinStrategy extends DestinationStrategy {
-  val counter = new AtomicLong()
+trait PipelineEncoder[E] extends EncoderBase[E] {
+  override def headerBytes() =
+    Array.emptyByteArray
 
-  override def select(destinations: Seq[Destination]) = {
-    destinations((counter.getAndIncrement() % destinations.size).toInt)
-  }
+  override def footerBytes() =
+    Array.emptyByteArray
 }

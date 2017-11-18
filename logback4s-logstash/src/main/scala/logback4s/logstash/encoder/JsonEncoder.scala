@@ -17,15 +17,12 @@
 package logback4s.logstash.encoder
 
 import ch.qos.logback.classic.spi.ILoggingEvent
-import ch.qos.logback.core.encoder.{ Encoder, EncoderBase }
+import logback4s.PipelineEncoder
 
 /**
  * @author siuming
  */
-class JsonEncoder extends EncoderBase[ILoggingEvent] {
-  override def headerBytes() = ???
+class JsonEncoder extends PipelineEncoder[ILoggingEvent] {
 
   override def encode(event: ILoggingEvent) = ???
-
-  override def footerBytes() = ???
 }

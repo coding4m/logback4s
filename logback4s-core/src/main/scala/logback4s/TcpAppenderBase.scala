@@ -19,7 +19,7 @@ package logback4s
 /**
  * @author siuming
  */
-abstract class TcpAppenderBase[E] extends DestinationAppender[E] {
+abstract class TcpAppenderBase[E] extends PipelineAppender[E] {
 
   private var soTimeout: Int = _
   private var connectTimeout: Int = _
