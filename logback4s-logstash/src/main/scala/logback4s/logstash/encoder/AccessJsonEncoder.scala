@@ -17,11 +17,11 @@
 package logback4s.logstash.encoder
 
 import ch.qos.logback.access.spi.AccessEvent
-import logback4s.PipeEncoder
+import logback4s.PipelineEncoder
 
 /**
  * @author siuming
  */
-class AccessJsonEncoder extends PipeEncoder[AccessEvent] {
+class AccessJsonEncoder extends PipelineEncoder[AccessEvent] {
   override def encode(event: AccessEvent) = ???
 }

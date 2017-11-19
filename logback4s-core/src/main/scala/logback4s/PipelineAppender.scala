@@ -23,13 +23,13 @@ import ch.qos.logback.core.spi.DeferredProcessingAware
 /**
  * @author siuming
  */
-object PipeAppender {
+object PipelineAppender {
   val DefaultMaxRetries = 1
   val DefaultMaxFails = 1
   val DefaultFailTimeout = 10000
 }
-abstract class PipeAppender[E] extends AppenderBase[E] {
-  import PipeAppender._
+abstract class PipelineAppender[E] extends AppenderBase[E] {
+  import PipelineAppender._
 
   val defaultHost: String
   val defaultPort: Int
