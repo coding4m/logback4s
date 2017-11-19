@@ -74,12 +74,7 @@ abstract class PipelineAppender[E] extends AppenderBase[E] {
   protected def postStart(): Unit = {
   }
 
-  protected def newRouter(
-    destinations: String,
-    destinationStrategy: String,
-    maxRetries: Int,
-    maxFails: Int,
-    failTimeout: Long): DestinationRouter
+  protected def newRouter(connections: String, strategy: String, maxRetries: Int, maxFails: Int, failTimeout: Long): DestinationRouter
 
   final override def stop() = {
     preStop()
