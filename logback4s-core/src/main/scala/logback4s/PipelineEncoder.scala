@@ -22,9 +22,29 @@ import ch.qos.logback.core.encoder.EncoderBase
  * @author siuming
  */
 trait PipelineEncoder[E] extends EncoderBase[E] {
+
+  private var includeMdcFields: String = _
+  private var includeAllMdcFields: Boolean = true
+
   override def headerBytes() =
     Array.emptyByteArray
 
   override def footerBytes() =
     Array.emptyByteArray
+
+  final def getIncludeMdcFields(): String = {
+    this.includeMdcFields
+  }
+
+  final def setIncludeMdcFields(includeFields: String): Unit = {
+    this.includeMdcFields = includeFields
+  }
+
+  final def getIncludeAllMdcFields(): Boolean = {
+    this.includeAllMdcFields
+  }
+
+  final def setIncludeAllMdcFields(includeAll: Boolean): Unit = {
+    this.includeAllMdcFields = includeAll
+  }
 }
