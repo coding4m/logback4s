@@ -24,22 +24,42 @@ import javax.net.SocketFactory
  */
 class TcpDestination(host: String, port: Int, soTimeout: Int, connectTimeout: Int) extends Destination {
 
-  @volatile var socket: Socket = _
+  @volatile private var socket: Socket = _
 
   override def send(bytes: Array[Byte]) = {
-    if (!socket.isClosed) {
-      socket = SocketFactory.getDefault.createSocket()
-      socket.setSoTimeout(soTimeout)
-      socket.connect(new InetSocketAddress(host, port), connectTimeout)
+    ensureOpen()
+    ensureWrite(bytes)
+  }
+
+  private def ensureOpen() = {
+    var _socket = socket
+    if (null == _socket || _socket.isClosed) {
+      this.synchronized {
+        _socket = socket
+        if (null == _socket || _socket.isClosed) {
+          _socket = SocketFactory.getDefault.createSocket()
+          _socket.setSoTimeout(soTimeout)
+          _socket.connect(new InetSocketAddress(host, port), connectTimeout)
+          socket = _socket
+        }
+      }
     }
-    socket.getOutputStream.write(bytes)
-    socket.getOutputStream.flush()
   }
 
-  protected def preSend(socket: Socket, bytes: Array[Byte]): Unit = {
-  }
+  private def ensureWrite(bytes: Array[Byte]) = {
+    try {
+      socket.getOutputStream.write(bytes)
+      socket.getOutputStream.flush()
+    } catch {
+      case e: Throwable =>
+        try {
+          socket.close()
+        } catch {
+          case _: Throwable =>
+        }
+        throw e
+    }
 
-  protected def postSend(socket: Socket, bytes: Array[Byte]): Unit = {
   }
 
   override def close() = {

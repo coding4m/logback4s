@@ -18,6 +18,7 @@ import sbt._
 
 object ProjectDependencyVersions {
   val LogbackVersion = "1.2.3"
+  val Json4sVersion = "3.5.3"
 }
 
 object ProjectDependencies {
@@ -33,5 +34,8 @@ object ProjectDependencies {
   val LogbackCore = "ch.qos.logback" % "logback-core" % LogbackVersion
   val LogbackAccess = "ch.qos.logback" % "logback-access" % LogbackVersion
   val LogbackClassic = "ch.qos.logback" % "logback-classic" % LogbackVersion
+
+  val Json4sJackson =        "org.json4s"                %% "json4s-jackson"            % Json4sVersion
+  val Json4sExt =            "org.json4s"                %% "json4s-ext"                % Json4sVersion
 }
 

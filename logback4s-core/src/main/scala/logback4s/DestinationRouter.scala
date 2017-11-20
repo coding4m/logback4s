@@ -17,7 +17,6 @@
 package logback4s
 
 import java.io.Closeable
-import java.util.concurrent.locks.ReentrantReadWriteLock
 
 /**
  * @author siuming
@@ -29,22 +28,22 @@ final class DestinationRouter(
   maxFails: Int,
   failTimeout: Long) extends Closeable {
 
-  private val lock = new ReentrantReadWriteLock()
-  private var hints = Seq.empty[BackupHint]
-  private var backups = Seq.empty[Backup]
-  private var actives = Seq(destinations: _*)
+  @volatile private var hints = Seq.empty[BackupHint]
+  @volatile private var backups = Seq.empty[Backup]
+  @volatile private var actives = Seq(destinations: _*)
 
   def send(bytes: Array[Byte]): Unit = {
     sendInternal(maxRetries, bytes)
   }
 
   private def sendInternal(retryTimes: Int, bytes: Array[Byte]): Unit = {
-    val destination = selectDestination()
+    upgradeDestination()
+    val d = selectDestination()
     try {
-      destination.send(bytes)
+      d.send(bytes)
     } catch {
       case e: Throwable =>
-        downgradeDestination(destination)
+        downgradeDestination(d)
         if (retryTimes <= 1) {
           throw e
         }
@@ -53,29 +52,27 @@ final class DestinationRouter(
   }
 
   private def selectDestination() = {
-    readLock {
-      if (backups.nonEmpty) {
-        upgradeDestination()
-      }
-      if (actives.isEmpty) {
-        throw new NotAvailableDestinationException
-      }
-
-      strategy.select(actives)
+    val _actives = actives
+    if (_actives.isEmpty) {
+      throw new NotAvailableDestinationException
     }
+    strategy.select(_actives)
   }
 
   private def upgradeDestination(): Unit = {
-    writeLock {
-      backups.filter(_.until <= System.currentTimeMillis()).foreach { it =>
-        backups = backups.filterNot(_.destination.id != it.destination.id)
-        actives = actives.filterNot(_.id != it.destination.id) :+ it.destination
+    val _backups = backups
+    if (_backups.nonEmpty) {
+      this.synchronized {
+        backups.filter(_.until <= System.currentTimeMillis()).foreach { it =>
+          backups = backups.filterNot(_.destination.id != it.destination.id)
+          actives = actives.filterNot(_.id != it.destination.id) :+ it.destination
+        }
       }
     }
   }
 
   private def downgradeDestination(destination: Destination): Unit = {
-    writeLock {
+    this.synchronized {
       val hint = hints.find(_.id == destination.id).getOrElse(BackupHint(destination.id, 0))
       if (hint.fails >= maxFails - 1) {
         backups = backups.filterNot(_.destination.id != hint.id) :+ Backup(destination, System.currentTimeMillis() + failTimeout)
@@ -84,24 +81,6 @@ final class DestinationRouter(
       } else {
         hints = hints.filterNot(_.id != hint.id) :+ hint.copy(fails = hint.fails + 1)
       }
-    }
-  }
-
-  private def readLock[T](body: => T): T = {
-    try {
-      lock.readLock().lock()
-      body
-    } finally {
-      lock.readLock().unlock()
-    }
-  }
-
-  private def writeLock[T](body: => T): T = {
-    try {
-      lock.writeLock().lock()
-      body
-    } finally {
-      lock.writeLock().unlock()
     }
   }
 

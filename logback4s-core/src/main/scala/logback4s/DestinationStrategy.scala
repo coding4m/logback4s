@@ -40,7 +40,6 @@ object RoundRobinStrategy extends RoundRobinStrategy {
 }
 trait RoundRobinStrategy extends DestinationStrategy {
   val counter = new AtomicLong()
-
   override def select(destinations: Seq[Destination]) = {
     destinations((counter.getAndIncrement() % destinations.size).toInt)
   }

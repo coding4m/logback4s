@@ -14,14 +14,21 @@
  * limitations under the License.
  */
 
-package logback4s.logstash.encoder
+package logback4s.logstash
 
-import ch.qos.logback.access.spi.AccessEvent
-import logback4s.PipelineEncoder
+import org.scalatest.{ FunSpec, Matchers }
+import org.slf4j.LoggerFactory
 
 /**
  * @author siuming
  */
-class AccessJsonEncoder extends PipelineEncoder[AccessEvent] {
-  override def encode(event: AccessEvent) = ???
+class LoggerSpec extends FunSpec with Matchers {
+
+  val logger = LoggerFactory.getLogger(getClass)
+  describe("just test") {
+    it("should be true") {
+      logger.warn("test")
+      assert(1 == 1)
+    }
+  }
 }

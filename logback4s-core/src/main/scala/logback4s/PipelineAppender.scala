@@ -45,19 +45,28 @@ abstract class PipelineAppender[E] extends AppenderBase[E] {
   private var destinationStrategy: String = RandomStrategy.Name
 
   final override def append(eventObject: E) = {
-    val event = processEvent(eventObject)
-    router.send(encoder.headerBytes() ++ encoder.encode(event) ++ encoder.footerBytes())
-    postProcessEvent(eventObject)
+    try {
+      val event = processEvent(eventObject)
+      router.send(encoder.headerBytes() ++ encoder.encode(event) ++ encoder.footerBytes())
+      postProcessEvent(eventObject)
+    } catch {
+      case e: Throwable => addError("append event occurs error.", e)
+    }
   }
 
-  protected def processEvent(eventObject: E): E = eventObject match {
-    case deferred: DeferredProcessingAware =>
-      deferred.prepareForDeferredProcessing()
-      eventObject
-    case _ =>
-      eventObject
+  /**
+   *
+   * @param eventObject
+   * @return
+   */
+  protected def processEvent(eventObject: E): E = {
+    eventObject
   }
 
+  /**
+   *
+   * @param eventObject
+   */
   protected def postProcessEvent(eventObject: E): Unit = {
   }
 

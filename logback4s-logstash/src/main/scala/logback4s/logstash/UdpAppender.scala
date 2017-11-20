@@ -18,17 +18,23 @@ package logback4s.logstash
 
 import ch.qos.logback.classic.spi.ILoggingEvent
 import logback4s.UdpAppenderBase
+import logback4s.logstash.encoder.JsonEncoder
 
 /**
  * @author siuming
  */
 class UdpAppender extends UdpAppenderBase[ILoggingEvent] {
-  override val defaultHost = "127.0.0.1" //todo
-  override val defaultPort = 110 //todo
+  override val defaultHost = "127.0.0.1"
+  override val defaultPort = 12345
 
   override protected def preStart() = {
     if (null == getEncoder()) {
+      setEncoder(new JsonEncoder)
       addWarn("encoder not set, use json encoder as default.")
+    }
+    if (null == getDestinations()) {
+      setDestinations(s"$defaultHost:$defaultPort")
+      addWarn(s"destinations not set, use $defaultHost:$defaultPort as default.")
     }
   }
 }

@@ -18,11 +18,49 @@ package logback4s.logstash.encoder
 
 import ch.qos.logback.classic.spi.ILoggingEvent
 import logback4s.PipelineEncoder
+import org.json4s.jackson.Serialization
 
 /**
  * @author siuming
  */
 class JsonEncoder extends PipelineEncoder[ILoggingEvent] {
+  import scala.collection.JavaConversions._
+  private implicit val formats = org.json4s.DefaultFormats
 
-  override def encode(event: ILoggingEvent) = ???
+  private var encoding = "utf-8"
+  private var lineSeparator = System.lineSeparator()
+
+  override def encode(event: ILoggingEvent) = {
+    var evt = Map.empty[String, Any]
+    evt = evt + ("level" -> event.getLevel.levelStr)
+    evt = evt + ("message" -> event.getFormattedMessage)
+    evt = evt + ("logger_name" -> event.getLoggerName)
+    evt = evt + ("thread_name" -> event.getThreadName)
+
+    if (getIncludeAllMdcFields()) {
+      evt = evt + ("@metadata" -> event.getMDCPropertyMap)
+    } else {
+      val fields = getIncludeMdcFields().split(",|;").map(_.trim)
+      evt = evt + ("@metadata" -> event.getMDCPropertyMap.filterKeys(fields.contains))
+    }
+
+    if (null != getTags()) {
+      evt = evt + ("@tags" -> getTags().split(",|;").map(_.trim))
+    }
+    if (null != getVersion()) {
+      evt = evt + ("@version" -> getVersion())
+    }
+    evt = evt + ("@timestamp" -> event.getTimeStamp)
+    Serialization.write(evt).getBytes(encoding)
+  }
+
+  override def footerBytes() = lineSeparator.getBytes
+
+  final def setEncoding(encoding: String): Unit = {
+    this.encoding = encoding
+  }
+
+  final def setLineSeparator(lineSeparator: String): Unit = {
+    this.lineSeparator = lineSeparator
+  }
 }

@@ -16,7 +16,7 @@ externalResolvers in ThisBuild := Resolver.withDefaultResolvers(Seq.empty, maven
 
 isSnapshot in ThisBuild := true
 
-fork in ThisBuild := true
+//fork in ThisBuild := true
 
 lazy val aggregateProjects: Seq[ProjectReference] = Seq(
   core,
@@ -59,6 +59,7 @@ lazy val logstash = (project in file("logback4s-logstash"))
   .settings(commonSettings: _*)
   .settings(integrationTestSettings: _*)
   .settings(libraryDependencies ++= Seq(LogbackAccess, LogbackClassic))
+  .settings(libraryDependencies ++= Seq(Json4sJackson, Json4sExt))
   .settings(libraryDependencies ++= Seq(Javaslang % "test", JunitInterface % "test", Scalatest % "test,it"))
   .settings(integrationTestPublishSettings: _*)
   .dependsOn(core)

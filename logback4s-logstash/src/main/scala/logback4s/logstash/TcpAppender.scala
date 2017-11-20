@@ -24,8 +24,8 @@ import logback4s.logstash.encoder.JsonEncoder
  * @author siuming
  */
 class TcpAppender extends TcpAppenderBase[ILoggingEvent] {
-  override val defaultHost = "127.0.0.1" //todo
-  override val defaultPort = 110 //todo
+  override val defaultHost = "127.0.0.1"
+  override val defaultPort = 12345
 
   override protected def preStart() = {
     if (null == getEncoder()) {
@@ -36,9 +36,5 @@ class TcpAppender extends TcpAppenderBase[ILoggingEvent] {
       setDestinations(s"$defaultHost:$defaultPort")
       addWarn(s"destinations not set, use $defaultHost:$defaultPort as default.")
     }
-  }
-
-  override protected def processEvent(eventObject: ILoggingEvent) = {
-    ???
   }
 }

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="true">
+    <contextName>testContext</contextName>
+    <appender name="stash" class="logback4s.logstash.TcpAppender">
+        <destinations>127.0.0.1:12345</destinations>
+        <encoder class="logback4s.logstash.encoder.JsonEncoder">
+            <tags>a,b;c</tags>
+            <version>1</version>
+        </encoder>
+    </appender>
+
+    <root level="DEBUG">
+        <appender-ref ref="stash" />
+    </root>
+</configuration>

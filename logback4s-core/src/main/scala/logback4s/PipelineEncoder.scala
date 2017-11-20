@@ -23,6 +23,8 @@ import ch.qos.logback.core.encoder.EncoderBase
  */
 trait PipelineEncoder[E] extends EncoderBase[E] {
 
+  private var tags: String = _
+  private var version: String = _
   private var includeMdcFields: String = _
   private var includeAllMdcFields: Boolean = true
 
@@ -31,6 +33,22 @@ trait PipelineEncoder[E] extends EncoderBase[E] {
 
   override def footerBytes() =
     Array.emptyByteArray
+
+  final def getTags(): String = {
+    this.tags
+  }
+
+  final def setTags(tags: String): Unit = {
+    this.tags = tags
+  }
+
+  final def getVersion(): String = {
+    this.version
+  }
+
+  final def setVersion(version: String): Unit = {
+    this.version = version
+  }
 
   final def getIncludeMdcFields(): String = {
     this.includeMdcFields
