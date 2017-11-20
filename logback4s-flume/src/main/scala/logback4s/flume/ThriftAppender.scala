@@ -16,9 +16,22 @@
 
 package logback4s.flume
 
+import ch.qos.logback.classic.spi.ILoggingEvent
+import logback4s.PipelineAppender
+
 /**
  * @author siuming
  */
-class ThriftAppender {
+class ThriftAppender extends PipelineAppender[ILoggingEvent] {
+  override val defaultHost = "127.0.0.1"
+  override val defaultPort = 4141
 
+  override protected def newRouter(
+    connections: String,
+    strategy: String,
+    maxRetries: Int,
+    maxFails: Int,
+    failTimeout: Long) = {
+    ???
+  }
 }

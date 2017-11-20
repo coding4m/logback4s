@@ -26,6 +26,7 @@ trait PipelineEncoder[E] extends EncoderBase[E] {
   private var tags: String = _
   private var version: String = _
   private var timezone: String = _
+  private var application: String = _
   private var includeMdcFields: String = _
   private var includeAllMdcFields: Boolean = true
 
@@ -57,6 +58,14 @@ trait PipelineEncoder[E] extends EncoderBase[E] {
 
   final def setTimezone(timezone: String): Unit = {
     this.timezone = timezone
+  }
+
+  final def getApplication(): String = {
+    this.application
+  }
+
+  final def setApplication(application: String): Unit = {
+    this.application = application
   }
 
   final def getIncludeMdcFields(): String = {

@@ -14,11 +14,30 @@
  * limitations under the License.
  */
 
-package logback4s.logstash.encoder
+package logback4s.flume
+
+import logback4s.Destination
+import org.apache.flume.api.RpcClientFactory
+import org.apache.flume.event.EventBuilder
 
 /**
  * @author siuming
  */
-class MsgpackEncoder {
+private[flume] class ThriftDestination(host: String, port: Int) extends Destination {
+  private var client = RpcClientFactory.getThriftInstance(host, port)
 
+  override def send(bytes: Array[Byte]) = {
+    val event = EventBuilder.withBody(bytes)
+    client.append(event)
+  }
+
+  override def close() = {
+    if (null != client) {
+      try {
+        client.close()
+      } catch {
+        case _: Throwable =>
+      }
+    }
+  }
 }

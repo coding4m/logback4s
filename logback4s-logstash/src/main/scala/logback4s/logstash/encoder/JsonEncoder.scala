@@ -33,9 +33,9 @@ class JsonEncoder extends PipelineEncoder[ILoggingEvent] {
   override def encode(event: ILoggingEvent) = {
     var evt = Map.empty[String, Any]
     evt = evt + ("level" -> event.getLevel.levelStr)
+    evt = evt + ("logger" -> event.getLoggerName)
+    evt = evt + ("thread" -> event.getThreadName)
     evt = evt + ("message" -> event.getFormattedMessage)
-    evt = evt + ("logger_name" -> event.getLoggerName)
-    evt = evt + ("thread_name" -> event.getThreadName)
 
     if (getIncludeAllMdcFields()) {
       evt = evt + ("@metadata" -> event.getMDCPropertyMap)

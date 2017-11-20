@@ -14,15 +14,30 @@
  * limitations under the License.
  */
 
-package logback4s.fluentd
+package logback4s.flume
 
-import ch.qos.logback.classic.spi.ILoggingEvent
-import logback4s.TcpAppenderBase
+import logback4s.Destination
+import org.apache.flume.api.RpcClientFactory
+import org.apache.flume.event.EventBuilder
 
 /**
  * @author siuming
  */
-class TcpAppender extends TcpAppenderBase[ILoggingEvent] {
-  override val defaultHost = "127.0.0.1"
-  override val defaultPort = 5170
+private[flume] class ArvoDestination(host: String, port: Int) extends Destination {
+  private var client = RpcClientFactory.getDefaultInstance(host, port)
+
+  override def send(bytes: Array[Byte]) = {
+    val event = EventBuilder.withBody(bytes)
+    client.append(event)
+  }
+
+  override def close() = {
+    if (null != client) {
+      try {
+        client.close()
+      } catch {
+        case _: Throwable =>
+      }
+    }
+  }
 }

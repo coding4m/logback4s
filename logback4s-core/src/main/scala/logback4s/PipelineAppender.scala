@@ -18,7 +18,6 @@ package logback4s
 
 import ch.qos.logback.core.AppenderBase
 import ch.qos.logback.core.encoder.Encoder
-import ch.qos.logback.core.spi.DeferredProcessingAware
 
 /**
  * @author siuming
@@ -83,7 +82,12 @@ abstract class PipelineAppender[E] extends AppenderBase[E] {
   protected def postStart(): Unit = {
   }
 
-  protected def newRouter(connections: String, strategy: String, maxRetries: Int, maxFails: Int, failTimeout: Long): DestinationRouter
+  protected def newRouter(
+    connections: String,
+    strategy: String,
+    maxRetries: Int,
+    maxFails: Int,
+    failTimeout: Long): DestinationRouter
 
   final override def stop() = {
     preStop()

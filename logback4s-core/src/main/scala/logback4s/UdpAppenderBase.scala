@@ -21,7 +21,12 @@ package logback4s
  */
 abstract class UdpAppenderBase[E] extends PipelineAppender[E] {
 
-  override protected def newRouter(connections: String, strategy: String, maxRetries: Int, maxFails: Int, failTimeout: Long) = {
+  override protected def newRouter(
+    connections: String,
+    strategy: String,
+    maxRetries: Int,
+    maxFails: Int,
+    failTimeout: Long) = {
     import Destination._
     val destinations = connections.split(",|;").collect {
       case HostAndPort(host, port) => new UdpDestination(host, port.toInt)

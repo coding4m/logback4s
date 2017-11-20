@@ -16,9 +16,13 @@
 
 package logback4s.fluentd
 
+import ch.qos.logback.classic.spi.ILoggingEvent
+import logback4s.UdpAppenderBase
+
 /**
  * @author siuming
  */
-class UdpAppender {
-
+class UdpAppender extends UdpAppenderBase[ILoggingEvent] {
+  override val defaultHost = "127.0.0.1"
+  override val defaultPort = 5160
 }

@@ -19,6 +19,7 @@ import sbt._
 object ProjectDependencyVersions {
   val LogbackVersion = "1.2.3"
   val Json4sVersion = "3.5.3"
+  val FlumeVersion = "1.8.0"
 }
 
 object ProjectDependencies {
@@ -37,5 +38,7 @@ object ProjectDependencies {
 
   val Json4sJackson =        "org.json4s"                %% "json4s-jackson"            % Json4sVersion
   val Json4sExt =            "org.json4s"                %% "json4s-ext"                % Json4sVersion
+
+  val Flume =  "org.apache.flume" % "flume-ng-sdk" % FlumeVersion
 }
 
