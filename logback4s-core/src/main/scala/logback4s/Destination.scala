@@ -27,6 +27,7 @@ import scala.util.matching.Regex
 object Destination {
   val Host: Regex = "([^:]+)".r
   val HostAndPort: Regex = "([^:]+):([0-9]+)".r
+  val HostSeparator: String = ",|;"
 }
 trait Destination extends Closeable {
   val id: String = UUID.randomUUID().toString

@@ -47,13 +47,14 @@ class TcpDestination(host: String, port: Int, soTimeout: Int, connectTimeout: In
   }
 
   private def ensureWrite(bytes: Array[Byte]) = {
+    val _socket = socket
     try {
-      socket.getOutputStream.write(bytes)
-      socket.getOutputStream.flush()
+      _socket.getOutputStream.write(bytes)
+      _socket.getOutputStream.flush()
     } catch {
       case e: Throwable =>
         try {
-          socket.close()
+          _socket.close()
         } catch {
           case _: Throwable =>
         }
@@ -71,4 +72,7 @@ class TcpDestination(host: String, port: Int, soTimeout: Int, connectTimeout: In
       }
     }
   }
+
+  override def toString =
+    s"TcpDestination[$host:$port]"
 }

@@ -16,22 +16,28 @@
 
 package logback4s.flume
 
-import ch.qos.logback.classic.spi.ILoggingEvent
-import logback4s.PipelineAppender
+import logback4s.Destination
+import org.apache.flume.api.RpcClientFactory
+import org.apache.flume.event.EventBuilder
 
 /**
  * @author siuming
  */
-class ArvoAppender extends PipelineAppender[ILoggingEvent] {
-  override val defaultHost = "127.0.0.1"
-  override val defaultPort = 4141
+private[flume] class AvroDestination(host: String, port: Int) extends Destination {
+  private var client = RpcClientFactory.getDefaultInstance(host, port)
 
-  override protected def newRouter(
-    connections: String,
-    strategy: String,
-    maxRetries: Int,
-    maxFails: Int,
-    failTimeout: Long) = {
-    ???
+  override def send(bytes: Array[Byte]) = {
+    val event = EventBuilder.withBody(bytes)
+    client.append(event)
+  }
+
+  override def close() = {
+    if (null != client) {
+      try {
+        client.close()
+      } catch {
+        case _: Throwable =>
+      }
+    }
   }
 }

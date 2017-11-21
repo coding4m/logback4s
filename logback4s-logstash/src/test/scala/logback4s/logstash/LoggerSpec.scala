@@ -27,7 +27,7 @@ class LoggerSpec extends FunSpec with Matchers {
   val logger = LoggerFactory.getLogger(getClass)
   describe("just test") {
     it("should be true") {
-      logger.warn("test")
+      logger.warn("hello world")
       assert(1 == 1)
     }
   }

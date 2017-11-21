@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 
-package logback4s
+package logback4s.flume
+
+import ch.qos.logback.classic.spi.ILoggingEvent
+import logback4s._
 
 /**
  * @author siuming
  */
-abstract class UdpAppenderBase[E] extends PipelineAppender[E] {
+class AvroAppender extends PipelineAppender[ILoggingEvent] {
+  override val defaultHost = "127.0.0.1"
+  override val defaultPort = 4141
 
   override protected def newRouter(
     connections: String,
@@ -29,8 +34,8 @@ abstract class UdpAppenderBase[E] extends PipelineAppender[E] {
     failTimeout: Long) = {
     import Destination._
     val destinations = connections.split(HostSeparator).collect {
-      case HostAndPort(host, port) => new UdpDestination(host, port.toInt)
-      case Host(host)              => new UdpDestination(host, defaultPort)
+      case HostAndPort(host, port) => new AvroDestination(host, port.toInt)
+      case Host(host)              => new AvroDestination(host, defaultPort)
     }
 
     val destinationStrategy = strategy.toLowerCase match {

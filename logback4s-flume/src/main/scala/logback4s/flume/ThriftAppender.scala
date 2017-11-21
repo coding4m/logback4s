@@ -17,7 +17,7 @@
 package logback4s.flume
 
 import ch.qos.logback.classic.spi.ILoggingEvent
-import logback4s.PipelineAppender
+import logback4s._
 
 /**
  * @author siuming
@@ -32,6 +32,17 @@ class ThriftAppender extends PipelineAppender[ILoggingEvent] {
     maxRetries: Int,
     maxFails: Int,
     failTimeout: Long) = {
-    ???
+    import Destination._
+    val destinations = connections.split(HostSeparator).collect {
+      case HostAndPort(host, port) => new ThriftDestination(host, port.toInt)
+      case Host(host)              => new ThriftDestination(host, defaultPort)
+    }
+
+    val destinationStrategy = strategy.toLowerCase match {
+      case RoundRobinStrategy.Name => RoundRobinStrategy
+      case _                       => RandomStrategy
+    }
+
+    new DestinationRouter(destinations, destinationStrategy, maxRetries, maxFails, failTimeout)
   }
 }

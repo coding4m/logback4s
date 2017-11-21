@@ -23,10 +23,9 @@ import ch.qos.logback.core.encoder.EncoderBase
  */
 trait PipelineEncoder[E] extends EncoderBase[E] {
 
-  private var tags: String = _
+  private var tag: String = _
   private var version: String = _
-  private var timezone: String = _
-  private var application: String = _
+  private var timezone: String = "Asia/Shanghai"
   private var includeMdcFields: String = _
   private var includeAllMdcFields: Boolean = true
 
@@ -36,12 +35,12 @@ trait PipelineEncoder[E] extends EncoderBase[E] {
   override def footerBytes() =
     Array.emptyByteArray
 
-  final def getTags(): String = {
-    this.tags
+  final def getTag(): String = {
+    this.tag
   }
 
-  final def setTags(tags: String): Unit = {
-    this.tags = tags
+  final def setTag(tags: String): Unit = {
+    this.tag = tags
   }
 
   final def getVersion(): String = {
@@ -58,14 +57,6 @@ trait PipelineEncoder[E] extends EncoderBase[E] {
 
   final def setTimezone(timezone: String): Unit = {
     this.timezone = timezone
-  }
-
-  final def getApplication(): String = {
-    this.application
-  }
-
-  final def setApplication(application: String): Unit = {
-    this.application = application
   }
 
   final def getIncludeMdcFields(): String = {

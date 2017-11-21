@@ -71,6 +71,7 @@ abstract class PipelineAppender[E] extends AppenderBase[E] {
 
   final override def start() = {
     preStart()
+    encoder.start()
     router = newRouter(destinations, destinationStrategy, maxRetries, maxFails, failTimeout)
     postStart()
     super.start()
@@ -92,6 +93,7 @@ abstract class PipelineAppender[E] extends AppenderBase[E] {
   final override def stop() = {
     preStop()
     try {
+      encoder.stop()
       router.close()
     } catch {
       case _: Throwable =>

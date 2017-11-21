@@ -85,6 +85,8 @@ final class DestinationRouter(
   }
 
   override def close() = {
-    destinations.foreach(_.close())
+    this.synchronized {
+      destinations.foreach(_.close())
+    }
   }
 }

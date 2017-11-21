@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration debug="true">
     <contextName>testContext</contextName>
-    <appender name="stash" class="logback4s.logstash.UdpAppender">
-        <destinations>127.0.0.1:12346</destinations>
+    <appender name="stash" class="logback4s.logstash.TcpAppender">
+        <destinations>127.0.0.1:12345</destinations>
     </appender>
 
     <root level="DEBUG">

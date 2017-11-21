@@ -36,7 +36,7 @@ abstract class TcpAppenderBase[E] extends PipelineAppender[E] {
     maxFails: Int,
     failTimeout: Long) = {
     import Destination._
-    val destinations = connections.split(",|;").collect {
+    val destinations = connections.split(HostSeparator).collect {
       case HostAndPort(host, port) => new TcpDestination(host, port.toInt, soTimeout, connectTimeout)
       case Host(host)              => new TcpDestination(host, defaultPort, soTimeout, connectTimeout)
     }

@@ -16,6 +16,9 @@
 
 package logback4s.logstash.encoder
 
+import java.time.format.DateTimeFormatter
+import java.time.{ Instant, ZoneId }
+
 import ch.qos.logback.classic.spi.ILoggingEvent
 import logback4s.PipelineEncoder
 import org.json4s.jackson.Serialization
@@ -27,8 +30,9 @@ class JsonEncoder extends PipelineEncoder[ILoggingEvent] {
   import scala.collection.JavaConversions._
   private implicit val formats = org.json4s.DefaultFormats
 
+  private val dtf = DateTimeFormatter.ISO_INSTANT
   private var encoding = "utf-8"
-  private var lineSeparator = System.lineSeparator()
+  private var separator = System.lineSeparator()
 
   override def encode(event: ILoggingEvent) = {
     var evt = Map.empty[String, Any]
@@ -44,23 +48,25 @@ class JsonEncoder extends PipelineEncoder[ILoggingEvent] {
       evt = evt + ("@metadata" -> event.getMDCPropertyMap.filterKeys(fields.contains))
     }
 
-    if (null != getTags()) {
-      evt = evt + ("@tags" -> getTags().split(",|;").map(_.trim))
+    if (null != getTag()) {
+      evt = evt + ("@tag" -> getTag())
     }
     if (null != getVersion()) {
       evt = evt + ("@version" -> getVersion())
     }
-    evt = evt + ("@timestamp" -> event.getTimeStamp)
+
+    val zoneId = ZoneId.of(getTimezone())
+    evt = evt + ("@timestamp" -> dtf.format(Instant.ofEpochMilli(event.getTimeStamp).atZone(zoneId)))
     Serialization.write(evt).getBytes(encoding)
   }
 
-  override def footerBytes() = lineSeparator.getBytes
+  override def footerBytes() = separator.getBytes
 
   final def setEncoding(encoding: String): Unit = {
     this.encoding = encoding
   }
 
-  final def setLineSeparator(lineSeparator: String): Unit = {
-    this.lineSeparator = lineSeparator
+  final def setSeparator(separator: String): Unit = {
+    this.separator = separator
   }
 }
