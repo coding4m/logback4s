@@ -21,7 +21,7 @@ import java.util.concurrent.Executors
 import ch.qos.logback.core.AppenderBase
 import ch.qos.logback.core.encoder.Encoder
 import ch.qos.logback.core.spi.DeferredProcessingAware
-import com.lmax.disruptor.{ EventFactory, EventHandler, EventTranslatorOneArg }
+import com.lmax.disruptor.{ EventFactory, EventHandler, EventTranslatorOneArg, ExceptionHandler }
 import com.lmax.disruptor.dsl.Disruptor
 
 /**
@@ -35,20 +35,15 @@ object PipelineAppender {
 
   private[logback4s] class LoggingEvent[E] {
     var event: E = _
-    def set(event: E): Unit = {
-      this.event = event
-    }
+    def set(event: E): Unit = this.event = event
   }
 
   private[logback4s] class LoggingEventFactory[E] extends EventFactory[LoggingEvent[E]] {
-    override def newInstance() =
-      new LoggingEvent[E]
+    override def newInstance() = new LoggingEvent[E]
   }
 
   private[logback4s] class LoggingEventTranslator[E] extends EventTranslatorOneArg[LoggingEvent[E], E] {
-    override def translateTo(event: LoggingEvent[E], sequence: Long, arg0: E) = {
-      event.set(arg0)
-    }
+    override def translateTo(event: LoggingEvent[E], sequence: Long, arg0: E) = event.set(arg0)
   }
 }
 abstract class PipelineAppender[E] extends AppenderBase[E] {
@@ -73,14 +68,10 @@ abstract class PipelineAppender[E] extends AppenderBase[E] {
   private var destinationStrategy: String = RandomStrategy.Name
 
   final override def append(eventObject: E) = {
-    try {
-      val event = processEvent(eventObject)
-      if (disruptor.getRingBuffer.tryPublishEvent(translator, event)) {
-        postProcessEvent(eventObject)
-      } else addError("append event error.")
-    } catch {
-      case e: Throwable => addError("append event occurs error.", e)
-    }
+    val event = processEvent(eventObject)
+    if (disruptor.getRingBuffer.tryPublishEvent(translator, event)) {
+      postProcessEvent(eventObject)
+    } else addError("publish logging event failed.")
   }
 
   /**
@@ -105,13 +96,6 @@ abstract class PipelineAppender[E] extends AppenderBase[E] {
 
   final override def start() = {
     preStart()
-    disruptor = new Disruptor[LoggingEvent[E]](factory, maxBufferSize, Executors.defaultThreadFactory())
-    disruptor.handleEventsWith(new EventHandler[LoggingEvent[E]] {
-      override def onEvent(le: LoggingEvent[E], sequence: Long, endOfBatch: Boolean) = {
-        router.send(encoder.headerBytes() ++ encoder.encode(le.event) ++ encoder.footerBytes())
-      }
-    })
-    disruptor.start()
     encoder.start()
 
     val strategy = destinationStrategy.toLowerCase match {
@@ -119,6 +103,18 @@ abstract class PipelineAppender[E] extends AppenderBase[E] {
       case _                       => RandomStrategy
     }
     router = new DestinationRouter(newDestinations(destinations), strategy, maxRetries, maxFails, failTimeout)
+    disruptor = new Disruptor[LoggingEvent[E]](factory, maxBufferSize, Executors.defaultThreadFactory())
+    disruptor.handleEventsWith(new EventHandler[LoggingEvent[E]] {
+      override def onEvent(le: LoggingEvent[E], sequence: Long, endOfBatch: Boolean) = {
+        router.send(encoder.headerBytes() ++ encoder.encode(le.event) ++ encoder.footerBytes())
+      }
+    })
+    disruptor.setDefaultExceptionHandler(new ExceptionHandler[LoggingEvent[E]] {
+      override def handleOnStartException(ex: Throwable) = throw ex
+      override def handleOnShutdownException(ex: Throwable) = throw ex
+      override def handleEventException(ex: Throwable, sequence: Long, event: LoggingEvent[E]) = addError("handle logging event failed.", ex)
+    })
+    disruptor.start()
     postStart()
     super.start()
   }
@@ -139,17 +135,17 @@ abstract class PipelineAppender[E] extends AppenderBase[E] {
   final override def stop() = {
     preStop()
     try {
-      disruptor.shutdown()
-    } catch {
-      case _: Throwable =>
-    }
-    try {
       encoder.stop()
     } catch {
       case _: Throwable =>
     }
     try {
       router.close()
+    } catch {
+      case _: Throwable =>
+    }
+    try {
+      disruptor.shutdown()
     } catch {
       case _: Throwable =>
     }

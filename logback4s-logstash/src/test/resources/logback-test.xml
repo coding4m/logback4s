@@ -2,7 +2,7 @@
 <configuration debug="true">
     <contextName>testContext</contextName>
     <appender name="stash" class="logback4s.logstash.TcpAppender">
-        <destinations>127.0.0.1:12345</destinations>
+        <destinations>172.16.1.25:12345</destinations>
     </appender>
 
     <root level="DEBUG">
