@@ -31,8 +31,12 @@ final class DestinationRouter(
   @volatile private var hints = Seq.empty[BackupHint]
   @volatile private var backups = Seq.empty[Backup]
   @volatile private var actives = Seq(destinations: _*)
+  @volatile private var closed: Boolean = false
 
   def send(bytes: Array[Byte]): Unit = {
+    if (closed) {
+      throw new IllegalStateException("router already closed.")
+    }
     sendInternal(maxRetries, bytes)
   }
 
@@ -87,6 +91,7 @@ final class DestinationRouter(
   override def close() = {
     this.synchronized {
       destinations.foreach(_.close())
+      closed = true
     }
   }
 }

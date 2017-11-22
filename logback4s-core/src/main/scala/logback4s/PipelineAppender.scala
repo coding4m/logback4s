@@ -135,7 +135,7 @@ abstract class PipelineAppender[E] extends AppenderBase[E] {
   final override def stop() = {
     preStop()
     try {
-      encoder.stop()
+      disruptor.shutdown()
     } catch {
       case _: Throwable =>
     }
@@ -145,7 +145,7 @@ abstract class PipelineAppender[E] extends AppenderBase[E] {
       case _: Throwable =>
     }
     try {
-      disruptor.shutdown()
+      encoder.stop()
     } catch {
       case _: Throwable =>
     }
