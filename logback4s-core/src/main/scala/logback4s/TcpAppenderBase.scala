@@ -29,24 +29,17 @@ abstract class TcpAppenderBase[E] extends PipelineAppender[E] {
   private var soTimeout: Int = DefaultSoTimeout
   private var connectTimeout: Int = DefaultConnectTomeout
 
-  override protected def newRouter(
-    connections: String,
-    strategy: String,
-    maxRetries: Int,
-    maxFails: Int,
-    failTimeout: Long) = {
+  /**
+   *
+   * @param connections
+   * @return
+   */
+  override protected def newDestinations(connections: String) = {
     import Destination._
-    val destinations = connections.split(HostSeparator).collect {
+    connections.split(HostSeparator).collect {
       case HostAndPort(host, port) => new TcpDestination(host, port.toInt, soTimeout, connectTimeout)
       case Host(host)              => new TcpDestination(host, defaultPort, soTimeout, connectTimeout)
     }
-
-    val destinationStrategy = strategy.toLowerCase match {
-      case RoundRobinStrategy.Name => RoundRobinStrategy
-      case _                       => RandomStrategy
-    }
-
-    new DestinationRouter(destinations, destinationStrategy, maxRetries, maxFails, failTimeout)
   }
 
   final def getSoTimeout(): Int = {

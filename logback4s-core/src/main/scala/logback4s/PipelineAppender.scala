@@ -16,16 +16,40 @@
 
 package logback4s
 
+import java.util.concurrent.Executors
+
 import ch.qos.logback.core.AppenderBase
 import ch.qos.logback.core.encoder.Encoder
+import ch.qos.logback.core.spi.DeferredProcessingAware
+import com.lmax.disruptor.{ EventFactory, EventHandler, EventTranslatorOneArg }
+import com.lmax.disruptor.dsl.Disruptor
 
 /**
  * @author siuming
  */
 object PipelineAppender {
+  val DefaultMaxBufferSize = 1024
   val DefaultMaxRetries = 1
   val DefaultMaxFails = 1
   val DefaultFailTimeout = 10000
+
+  private[logback4s] class LoggingEvent[E] {
+    var event: E = _
+    def set(event: E): Unit = {
+      this.event = event
+    }
+  }
+
+  private[logback4s] class LoggingEventFactory[E] extends EventFactory[LoggingEvent[E]] {
+    override def newInstance() =
+      new LoggingEvent[E]
+  }
+
+  private[logback4s] class LoggingEventTranslator[E] extends EventTranslatorOneArg[LoggingEvent[E], E] {
+    override def translateTo(event: LoggingEvent[E], sequence: Long, arg0: E) = {
+      event.set(arg0)
+    }
+  }
 }
 abstract class PipelineAppender[E] extends AppenderBase[E] {
   import PipelineAppender._
@@ -33,9 +57,14 @@ abstract class PipelineAppender[E] extends AppenderBase[E] {
   val defaultHost: String
   val defaultPort: Int
 
+  private val factory = new LoggingEventFactory[E]
+  private val translator = new LoggingEventTranslator[E]
+  private var disruptor: Disruptor[LoggingEvent[E]] = _
+
   private var router: DestinationRouter = _
   private var encoder: Encoder[E] = _
 
+  private var maxBufferSize: Int = DefaultMaxBufferSize
   private var maxRetries: Int = DefaultMaxRetries
   private var maxFails: Int = DefaultMaxFails
   private var failTimeout: Long = DefaultFailTimeout
@@ -46,8 +75,9 @@ abstract class PipelineAppender[E] extends AppenderBase[E] {
   final override def append(eventObject: E) = {
     try {
       val event = processEvent(eventObject)
-      router.send(encoder.headerBytes() ++ encoder.encode(event) ++ encoder.footerBytes())
-      postProcessEvent(eventObject)
+      if (disruptor.getRingBuffer.tryPublishEvent(translator, event)) {
+        postProcessEvent(eventObject)
+      } else addError("append event error.")
     } catch {
       case e: Throwable => addError("append event occurs error.", e)
     }
@@ -58,8 +88,12 @@ abstract class PipelineAppender[E] extends AppenderBase[E] {
    * @param eventObject
    * @return
    */
-  protected def processEvent(eventObject: E): E = {
-    eventObject
+  protected def processEvent(eventObject: E): E = eventObject match {
+    case deferred: DeferredProcessingAware =>
+      deferred.prepareForDeferredProcessing()
+      eventObject
+    case _ =>
+      eventObject
   }
 
   /**
@@ -71,11 +105,30 @@ abstract class PipelineAppender[E] extends AppenderBase[E] {
 
   final override def start() = {
     preStart()
+    disruptor = new Disruptor[LoggingEvent[E]](factory, maxBufferSize, Executors.defaultThreadFactory())
+    disruptor.handleEventsWith(new EventHandler[LoggingEvent[E]] {
+      override def onEvent(le: LoggingEvent[E], sequence: Long, endOfBatch: Boolean) = {
+        router.send(encoder.headerBytes() ++ encoder.encode(le.event) ++ encoder.footerBytes())
+      }
+    })
+    disruptor.start()
     encoder.start()
-    router = newRouter(destinations, destinationStrategy, maxRetries, maxFails, failTimeout)
+
+    val strategy = destinationStrategy.toLowerCase match {
+      case RoundRobinStrategy.Name => RoundRobinStrategy
+      case _                       => RandomStrategy
+    }
+    router = new DestinationRouter(newDestinations(destinations), strategy, maxRetries, maxFails, failTimeout)
     postStart()
     super.start()
   }
+
+  /**
+   *
+   * @param connections
+   * @return
+   */
+  protected def newDestinations(connections: String): Seq[Destination]
 
   protected def preStart(): Unit = {
   }
@@ -83,17 +136,19 @@ abstract class PipelineAppender[E] extends AppenderBase[E] {
   protected def postStart(): Unit = {
   }
 
-  protected def newRouter(
-    connections: String,
-    strategy: String,
-    maxRetries: Int,
-    maxFails: Int,
-    failTimeout: Long): DestinationRouter
-
   final override def stop() = {
     preStop()
     try {
+      disruptor.shutdown()
+    } catch {
+      case _: Throwable =>
+    }
+    try {
       encoder.stop()
+    } catch {
+      case _: Throwable =>
+    }
+    try {
       router.close()
     } catch {
       case _: Throwable =>
@@ -114,6 +169,14 @@ abstract class PipelineAppender[E] extends AppenderBase[E] {
 
   final def setEncoder(encoder: Encoder[E]): Unit = {
     this.encoder = encoder
+  }
+
+  final def getMaxBufferSize(): Int = {
+    this.maxBufferSize
+  }
+
+  final def setMaxBufferSize(maxBufferSize: Int): Unit = {
+    this.maxBufferSize = maxBufferSize
   }
 
   final def getMaxRetries(): Int = {

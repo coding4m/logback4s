@@ -28,10 +28,12 @@ class UdpAppender extends UdpAppenderBase[ILoggingEvent] {
   override val defaultPort = 12345
 
   override protected def preStart() = {
+
     if (null == getEncoder()) {
       setEncoder(new JsonEncoder)
       addWarn("encoder not set, use json encoder as default.")
     }
+
     if (null == getDestinations()) {
       setDestinations(s"$defaultHost:$defaultPort")
       addWarn(s"destinations not set, use $defaultHost:$defaultPort as default.")
