@@ -24,6 +24,7 @@ import ch.qos.logback.core.encoder.EncoderBase
 trait PipelineEncoder[E] extends EncoderBase[E] {
 
   private var tag: String = _
+  private var source: String = _
   private var version: String = _
   private var timezone: String = "Asia/Shanghai"
   private var includeMdcFields: String = _
@@ -41,6 +42,14 @@ trait PipelineEncoder[E] extends EncoderBase[E] {
 
   final def setTag(tags: String): Unit = {
     this.tag = tags
+  }
+
+  final def getSource(): String = {
+    this.source
+  }
+
+  final def setSource(source: String): Unit = {
+    this.source = source
   }
 
   final def getVersion(): String = {

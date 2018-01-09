@@ -51,6 +51,9 @@ class JsonEncoder extends PipelineEncoder[ILoggingEvent] {
     if (null != getTag()) {
       evt = evt + ("@tag" -> getTag())
     }
+    if (null != getSource()) {
+      evt = evt + ("@source" -> getSource())
+    }
     if (null != getVersion()) {
       evt = evt + ("@version" -> getVersion())
     }

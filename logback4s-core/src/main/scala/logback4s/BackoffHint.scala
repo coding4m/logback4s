@@ -19,6 +19,4 @@ package logback4s
 /**
  * @author siuming
  */
-class Backoff {
-
-}
+private[logback4s] case class BackoffHint(destination: Destination, until: Long)

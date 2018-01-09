@@ -29,7 +29,7 @@ final class DestinationRouter(
   failTimeout: Long) extends Closeable {
 
   @volatile private var hints = Seq.empty[BackupHint]
-  @volatile private var backups = Seq.empty[Backup]
+  @volatile private var backups = Seq.empty[BackoffHint]
   @volatile private var actives = Seq(destinations: _*)
   @volatile private var closed: Boolean = false
 
@@ -58,7 +58,7 @@ final class DestinationRouter(
   private def selectDestination() = {
     val _actives = actives
     if (_actives.isEmpty) {
-      throw new NotAvailableDestinationException
+      throw new DestinationNotAvailableException
     }
     strategy.select(_actives)
   }
@@ -79,7 +79,7 @@ final class DestinationRouter(
     this.synchronized {
       val hint = hints.find(_.id == destination.id).getOrElse(BackupHint(destination.id, 0))
       if (hint.fails >= maxFails - 1) {
-        backups = backups.filterNot(_.destination.id != hint.id) :+ Backup(destination, System.currentTimeMillis() + failTimeout)
+        backups = backups.filterNot(_.destination.id != hint.id) :+ BackoffHint(destination, System.currentTimeMillis() + failTimeout)
         actives = actives.filterNot(_.id != hint.id)
         hints = hints.filterNot(_.id != hint.id)
       } else {
