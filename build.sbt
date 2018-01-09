@@ -8,7 +8,8 @@ version in ThisBuild := "1.0.0-SNAPSHOT"
 
 organization in ThisBuild := "logback4s"
 
-scalaVersion in ThisBuild := "2.11.11"
+scalaVersion in ThisBuild := "2.12.4"
+crossScalaVersions := Seq("2.12.4", "2.11.12")
 
 javacOptions in ThisBuild ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint")
 
