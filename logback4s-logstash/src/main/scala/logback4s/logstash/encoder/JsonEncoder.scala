@@ -27,7 +27,7 @@ import org.json4s.jackson.Serialization
  * @author siuming
  */
 class JsonEncoder extends PipelineEncoder[ILoggingEvent] {
-  import scala.collection.JavaConversions._
+  import scala.collection.JavaConverters._
   private implicit val formats = org.json4s.DefaultFormats
 
   private val dtf = DateTimeFormatter.ISO_INSTANT
@@ -45,14 +45,21 @@ class JsonEncoder extends PipelineEncoder[ILoggingEvent] {
       evt = evt + ("@metadata" -> event.getMDCPropertyMap)
     } else {
       val fields = getIncludeMdcFields().split(",|;").map(_.trim)
-      evt = evt + ("@metadata" -> event.getMDCPropertyMap.filterKeys(fields.contains))
+      evt = evt + ("@metadata" -> event.getMDCPropertyMap.asScala.filterKeys(fields.contains))
+    }
+
+    if (null != getServiceName()) {
+      evt = evt + ("service_name" -> getServiceName())
+    }
+    if (null != getServiceHost()) {
+      evt = evt + ("service_host" -> getServiceHost())
+    }
+    if (null != getServicePort()) {
+      evt = evt + ("service_port" -> getServicePort())
     }
 
     if (null != getTag()) {
       evt = evt + ("@tag" -> getTag())
-    }
-    if (null != getSource()) {
-      evt = evt + ("@source" -> getSource())
     }
     if (null != getVersion()) {
       evt = evt + ("@version" -> getVersion())

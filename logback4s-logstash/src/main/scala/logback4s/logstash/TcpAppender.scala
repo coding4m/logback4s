@@ -27,8 +27,8 @@ class TcpAppender extends TcpAppenderBase[ILoggingEvent] {
   override val defaultHost = "127.0.0.1"
   override val defaultPort = 12345
 
-  override protected def preStart() = {
-
+  override protected def preStart(): Unit = {
+    super.preStart()
     if (null == getEncoder()) {
       setEncoder(new JsonEncoder)
       addWarn("encoder not set, use json encoder as default.")

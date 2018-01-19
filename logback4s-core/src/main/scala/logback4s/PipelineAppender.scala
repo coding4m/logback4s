@@ -43,7 +43,7 @@ object PipelineAppender {
   }
 
   private[logback4s] class LoggingEventTranslator[E] extends EventTranslatorOneArg[LoggingEvent[E], E] {
-    override def translateTo(event: LoggingEvent[E], sequence: Long, arg0: E) = event.set(arg0)
+    override def translateTo(event: LoggingEvent[E], sequence: Long, arg0: E): Unit = event.set(arg0)
   }
 }
 abstract class PipelineAppender[E] extends AppenderBase[E] {
@@ -67,7 +67,7 @@ abstract class PipelineAppender[E] extends AppenderBase[E] {
   private var destinations: String = _
   private var destinationStrategy: String = RandomStrategy.Name
 
-  final override def append(eventObject: E) = {
+  final override def append(eventObject: E): Unit = {
     val event = processEvent(eventObject)
     if (disruptor.getRingBuffer.tryPublishEvent(translator, event)) {
       postProcessEvent(eventObject)
@@ -94,7 +94,7 @@ abstract class PipelineAppender[E] extends AppenderBase[E] {
   protected def postProcessEvent(eventObject: E): Unit = {
   }
 
-  final override def start() = {
+  final override def start(): Unit = {
     preStart()
     encoder.start()
 
@@ -105,26 +105,19 @@ abstract class PipelineAppender[E] extends AppenderBase[E] {
     router = new DestinationRouter(newDestinations(destinations), strategy, maxRetries, maxFails, failTimeout)
     disruptor = new Disruptor[LoggingEvent[E]](factory, maxBufferSize, Executors.defaultThreadFactory())
     disruptor.handleEventsWith(new EventHandler[LoggingEvent[E]] {
-      override def onEvent(le: LoggingEvent[E], sequence: Long, endOfBatch: Boolean) = {
+      override def onEvent(le: LoggingEvent[E], sequence: Long, endOfBatch: Boolean): Unit = {
         router.send(encoder.headerBytes() ++ encoder.encode(le.event) ++ encoder.footerBytes())
       }
     })
     disruptor.setDefaultExceptionHandler(new ExceptionHandler[LoggingEvent[E]] {
-      override def handleOnStartException(ex: Throwable) = throw ex
-      override def handleOnShutdownException(ex: Throwable) = throw ex
-      override def handleEventException(ex: Throwable, sequence: Long, event: LoggingEvent[E]) = addError("handle logging event failed.", ex)
+      override def handleOnStartException(ex: Throwable): Unit = throw ex
+      override def handleOnShutdownException(ex: Throwable): Unit = throw ex
+      override def handleEventException(ex: Throwable, sequence: Long, event: LoggingEvent[E]): Unit = addError("handle logging event failed.", ex)
     })
     disruptor.start()
     postStart()
     super.start()
   }
-
-  /**
-   *
-   * @param connections
-   * @return
-   */
-  protected def newDestinations(connections: String): Seq[Destination]
 
   protected def preStart(): Unit = {
   }
@@ -132,7 +125,7 @@ abstract class PipelineAppender[E] extends AppenderBase[E] {
   protected def postStart(): Unit = {
   }
 
-  final override def stop() = {
+  final override def stop(): Unit = {
     preStop()
     try {
       disruptor.shutdown()
@@ -158,6 +151,13 @@ abstract class PipelineAppender[E] extends AppenderBase[E] {
 
   protected def postStop(): Unit = {
   }
+
+  /**
+   *
+   * @param connections
+   * @return
+   */
+  protected def newDestinations(connections: String): Seq[Destination]
 
   final def getEncoder(): Encoder[E] = {
     this.encoder

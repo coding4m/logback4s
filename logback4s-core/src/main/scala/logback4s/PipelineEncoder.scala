@@ -21,14 +21,38 @@ import ch.qos.logback.core.encoder.EncoderBase
 /**
  * @author siuming
  */
+object PipelineEncoder {
+  val ServiceNameEnv = "SERVICE_NAME"
+  val ServiceHostEnv = "SERVICE_HOST"
+  val ServicePortEnv = "SERVICE_PORT"
+}
 trait PipelineEncoder[E] extends EncoderBase[E] {
+  import PipelineEncoder._
 
   private var tag: String = _
   private var source: String = _
   private var version: String = _
   private var timezone: String = "Asia/Shanghai"
+
+  private var serviceName: String = _
+  private var serviceHost: String = _
+  private var servicePort: String = _
+
   private var includeMdcFields: String = _
   private var includeAllMdcFields: Boolean = true
+
+  override def start(): Unit = {
+    if (null == getServiceName()) {
+      setServiceName(System.getenv(ServiceNameEnv))
+    }
+    if (null == getServiceHost()) {
+      setServiceHost(System.getenv(ServiceHostEnv))
+    }
+    if (null == getServicePort()) {
+      setServicePort(System.getenv(ServicePortEnv))
+    }
+    super.start()
+  }
 
   override def headerBytes() =
     Array.emptyByteArray
@@ -42,14 +66,6 @@ trait PipelineEncoder[E] extends EncoderBase[E] {
 
   final def setTag(tags: String): Unit = {
     this.tag = tags
-  }
-
-  final def getSource(): String = {
-    this.source
-  }
-
-  final def setSource(source: String): Unit = {
-    this.source = source
   }
 
   final def getVersion(): String = {
@@ -66,6 +82,30 @@ trait PipelineEncoder[E] extends EncoderBase[E] {
 
   final def setTimezone(timezone: String): Unit = {
     this.timezone = timezone
+  }
+
+  final def getServiceName(): String = {
+    this.serviceName
+  }
+
+  final def setServiceName(serviceName: String): Unit = {
+    this.serviceName = serviceName
+  }
+
+  final def getServiceHost(): String = {
+    this.serviceHost
+  }
+
+  final def setServiceHost(serviceHost: String): Unit = {
+    this.serviceHost = serviceHost
+  }
+
+  final def getServicePort(): String = {
+    this.servicePort
+  }
+
+  final def setServicePort(servicePort: String): Unit = {
+    this.servicePort = servicePort
   }
 
   final def getIncludeMdcFields(): String = {

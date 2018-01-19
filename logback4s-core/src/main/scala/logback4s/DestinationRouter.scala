@@ -28,6 +28,9 @@ final class DestinationRouter(
   maxFails: Int,
   failTimeout: Long) extends Closeable {
 
+  private case class BackupHint(id: String, fails: Int)
+  private case class BackoffHint(destination: Destination, until: Long)
+
   @volatile private var hints = Seq.empty[BackupHint]
   @volatile private var backups = Seq.empty[BackoffHint]
   @volatile private var actives = Seq(destinations: _*)
@@ -88,7 +91,7 @@ final class DestinationRouter(
     }
   }
 
-  override def close() = {
+  override def close(): Unit = {
     this.synchronized {
       closed = true
       destinations.foreach(_.close())
