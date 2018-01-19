@@ -30,7 +30,6 @@ trait PipelineEncoder[E] extends EncoderBase[E] {
   import PipelineEncoder._
 
   private var tag: String = _
-  private var source: String = _
   private var version: String = _
   private var timezone: String = "Asia/Shanghai"
 
