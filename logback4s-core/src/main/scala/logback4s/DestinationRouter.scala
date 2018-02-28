@@ -23,7 +23,7 @@ import java.io.Closeable
  */
 final class DestinationRouter(
   destinations: Seq[Destination],
-  strategy: DestinationStrategy,
+  selector: DestinationSelector,
   maxRetries: Int,
   maxFails: Int,
   failTimeout: Long) extends Closeable {
@@ -63,7 +63,7 @@ final class DestinationRouter(
     if (_actives.isEmpty) {
       throw new DestinationNotAvailableException
     }
-    strategy.select(_actives)
+    selector.select(_actives)
   }
 
   private def upgradeDestination(): Unit = {

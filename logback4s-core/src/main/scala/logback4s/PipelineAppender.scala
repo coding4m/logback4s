@@ -65,7 +65,7 @@ abstract class PipelineAppender[E] extends AppenderBase[E] {
   private var failTimeout: Long = DefaultFailTimeout
 
   private var destinations: String = _
-  private var destinationStrategy: String = RandomStrategy.Name
+  private var destinationSelector: String = RandomSelector.Name
 
   final override def append(eventObject: E): Unit = {
     val event = processEvent(eventObject)
@@ -98,11 +98,11 @@ abstract class PipelineAppender[E] extends AppenderBase[E] {
     preStart()
     encoder.start()
 
-    val strategy = destinationStrategy.toLowerCase match {
-      case RoundRobinStrategy.Name => RoundRobinStrategy
-      case _                       => RandomStrategy
+    val selector = destinationSelector.toLowerCase match {
+      case RoundRobinSelector.Name => RoundRobinSelector
+      case _                       => RandomSelector
     }
-    router = new DestinationRouter(newDestinations(destinations), strategy, maxRetries, maxFails, failTimeout)
+    router = new DestinationRouter(newDestinations(destinations), selector, maxRetries, maxFails, failTimeout)
     disruptor = new Disruptor[LoggingEvent[E]](factory, maxBufferSize, Executors.defaultThreadFactory())
     disruptor.handleEventsWith(new EventHandler[LoggingEvent[E]] {
       override def onEvent(le: LoggingEvent[E], sequence: Long, endOfBatch: Boolean): Unit = {
@@ -207,11 +207,11 @@ abstract class PipelineAppender[E] extends AppenderBase[E] {
     this.destinations = destinations
   }
 
-  final def getDestinationStrategy(): String = {
-    this.destinationStrategy
+  final def getDestinationSelector(): String = {
+    this.destinationSelector
   }
 
-  final def setDestinationStrategy(strategy: String): Unit = {
-    this.destinationStrategy = strategy
+  final def setDestinationSelector(selector: String): Unit = {
+    this.destinationSelector = selector
   }
 }

@@ -23,22 +23,22 @@ import scala.util.Random
 /**
  * @author siuming
  */
-trait DestinationStrategy {
+trait DestinationSelector {
   def select(destinations: Seq[Destination]): Destination
 }
-object RandomStrategy extends RandomStrategy {
+object RandomSelector extends RandomSelector {
   val Name = "random"
 }
-trait RandomStrategy extends DestinationStrategy {
+trait RandomSelector extends DestinationSelector {
   private val random = new Random()
   override def select(destinations: Seq[Destination]) = {
     destinations(random.nextInt(destinations.size))
   }
 }
-object RoundRobinStrategy extends RoundRobinStrategy {
+object RoundRobinSelector extends RoundRobinSelector {
   val Name = "roundrobin"
 }
-trait RoundRobinStrategy extends DestinationStrategy {
+trait RoundRobinSelector extends DestinationSelector {
   val counter = new AtomicLong()
   override def select(destinations: Seq[Destination]) = {
     destinations((counter.getAndIncrement() % destinations.size).toInt)
