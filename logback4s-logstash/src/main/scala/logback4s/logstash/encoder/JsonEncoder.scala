@@ -48,20 +48,20 @@ class JsonEncoder extends PipelineEncoder[ILoggingEvent] {
       evt = evt + ("@metadata" -> event.getMDCPropertyMap.asScala.filterKeys(fields.contains))
     }
 
-    if (null != getServiceName() && "" != getServiceName()) {
+    if (null != getServiceName() && getServiceName().nonEmpty) {
       evt = evt + ("service_name" -> getServiceName())
     }
-    if (null != getServiceHost() && "" != getServiceHost()) {
+    if (null != getServiceHost() && getServiceHost().nonEmpty) {
       evt = evt + ("service_host" -> getServiceHost())
     }
-    if (null != getServicePort() && "" != getServicePort()) {
+    if (null != getServicePort() && getServicePort().nonEmpty) {
       evt = evt + ("service_port" -> getServicePort())
     }
 
-    if (null != getTag()) {
+    if (null != getTag() && getTag().nonEmpty) {
       evt = evt + ("@tag" -> getTag())
     }
-    if (null != getVersion()) {
+    if (null != getVersion() && getVersion().nonEmpty) {
       evt = evt + ("@version" -> getVersion())
     }
 
