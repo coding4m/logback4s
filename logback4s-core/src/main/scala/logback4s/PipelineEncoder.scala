@@ -21,13 +21,7 @@ import ch.qos.logback.core.encoder.EncoderBase
 /**
  * @author siuming
  */
-object PipelineEncoder {
-  val ServiceNameEnv = "SERVICE_NAME"
-  val ServiceHostEnv = "SERVICE_HOST"
-  val ServicePortEnv = "SERVICE_PORT"
-}
 trait PipelineEncoder[E] extends EncoderBase[E] {
-  import PipelineEncoder._
 
   private var tag: String = _
   private var version: String = _
@@ -39,19 +33,6 @@ trait PipelineEncoder[E] extends EncoderBase[E] {
 
   private var includeMdcFields: String = _
   private var includeAllMdcFields: Boolean = true
-
-  override def start(): Unit = {
-    if (null == getServiceName()) {
-      setServiceName(System.getenv(ServiceNameEnv))
-    }
-    if (null == getServiceHost()) {
-      setServiceHost(System.getenv(ServiceHostEnv))
-    }
-    if (null == getServicePort()) {
-      setServicePort(System.getenv(ServicePortEnv))
-    }
-    super.start()
-  }
 
   override def headerBytes() =
     Array.emptyByteArray

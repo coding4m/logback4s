@@ -34,7 +34,7 @@ class UdpAppender extends UdpAppenderBase[ILoggingEvent] {
       addWarn("encoder not set, use json encoder as default.")
     }
 
-    if (null == getDestinations()) {
+    if (null == getDestinations() || "" == getDestinations()) {
       setDestinations(s"$defaultHost:$defaultPort")
       addWarn(s"destinations not set, use $defaultHost:$defaultPort as default.")
     }
