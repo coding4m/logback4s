@@ -19,7 +19,7 @@ import sbt._
 object ProjectDependencyVersions {
   val DisruptorVersion = "3.3.7"
   val LogbackVersion = "1.2.3"
-  val Json4sVersion = "3.6.0"
+  val Json4sVersion = "3.6.2"
   val FlumeVersion = "1.8.0"
 }
 
